@@ -6,8 +6,9 @@ fn get_increases(input: &str) -> usize {
         .lines()
         .filter_map(|line| line.parse::<usize>().ok())
         .tuple_windows::<(_, _, _)>()
+        .map(|(a, b, c)| a + b + c)
         .tuple_windows::<(_, _)>()
-        .filter(|((a, b, c), (d, e, f))| a + b + c < d + e + f)
+        .filter(|(a, b)| a < b)
         .count()
 }
 
