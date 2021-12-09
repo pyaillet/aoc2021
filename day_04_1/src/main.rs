@@ -23,15 +23,8 @@ impl Square {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum BoardStatus {
-    InProgress,
-    Won(u32, u32),
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct Board {
     square: [[Square; 5]; 5],
-    status: BoardStatus,
 }
 
 impl Board {
@@ -101,10 +94,7 @@ impl FromStr for Board {
                     .or_else(|_| Err(()))?;
             }
         }
-        Ok(Board {
-            square,
-            status: BoardStatus::InProgress,
-        })
+        Ok(Board { square })
     }
 }
 
@@ -136,6 +126,7 @@ struct Game {
 enum TurnResult {
     Continue,
     Done,
+    Win(u32),
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -148,18 +139,18 @@ impl Game {
     fn next_turn(&mut self) -> TurnResult {
         let draw = self.turns[self.current as usize];
         println!("Turn: {} - Draw: {}", self.current, draw);
-        for (i, b) in self.boards.iter_mut().enumerate() {
-            if b.mark(draw) {
-                if b.won() {
-                    b.status = BoardStatus::Won(b.score(draw), self.current);
-                }
-            }
-            println!("Board {}\n{}", i, b);
-        }
         self.current += 1;
         if self.current == self.turns.len() as u32 {
             TurnResult::Done
         } else {
+            for (i, b) in self.boards.iter_mut().enumerate() {
+                if b.mark(draw) {
+                    if b.won() {
+                        return TurnResult::Win(b.score(draw));
+                    }
+                }
+                println!("Board {}\n{}", i, b);
+            }
             TurnResult::Continue
         }
     }
@@ -313,8 +304,7 @@ mod tests {
         assert_eq!(
             game.boards,
             vec![Board {
-                square: BOARD_1_PARSED,
-                status: BoardStatus::InProgress,
+                square: BOARD_1_PARSED
             }]
         );
         assert_eq!(game.turns, vec![13]);
