@@ -15,7 +15,6 @@ impl Iterator for Fishes {
                 new[i - 1] += self.0[i];
             }
         }
-        println!("{:?}", new);
         self.0 = new;
         Some(())
     }

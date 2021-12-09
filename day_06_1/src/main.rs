@@ -1,30 +1,31 @@
 use std::str::FromStr;
 
 #[derive(Clone, Debug)]
-struct Fishes(Vec<u8>);
+struct Fishes([usize; 9]);
 
 impl Iterator for Fishes {
-    type Item = Fishes;
+    type Item = ();
     fn next(&mut self) -> Option<Self::Item> {
-        let mut new_vec = self.0.clone();
-        for i in 0..self.0.len() {
-            if self.0[i] == 0 {
-                new_vec[i] = 6;
-                new_vec.push(8);
+        let mut new: [usize; 9] = [0; 9];
+        for i in 0..9 {
+            if i == 0 {
+                new[8] = self.0[i];
+                new[6] = self.0[i];
             } else {
-                new_vec[i] -= 1;
+                new[i - 1] += self.0[i];
             }
         }
-
-        self.0 = new_vec.clone();
-
-        Some(new_vec.into())
+        self.0 = new;
+        Some(())
     }
 }
 
 impl From<Vec<u8>> for Fishes {
     fn from(v: Vec<u8>) -> Self {
-        Fishes(v)
+        v.iter().fold(Fishes([0; 9]), |mut acc, x| {
+            acc.0[*x as usize] += 1;
+            acc
+        })
     }
 }
 
@@ -40,7 +41,8 @@ impl FromStr for Fishes {
 
 fn count_lantern_fishes(input: &str, days: usize) -> usize {
     let mut fishes = Fishes::from_str(input).unwrap();
-    fishes.nth(days - 1).unwrap().0.len()
+    fishes.nth(days - 1).unwrap();
+    fishes.0.iter().sum()
 }
 
 fn main() {
